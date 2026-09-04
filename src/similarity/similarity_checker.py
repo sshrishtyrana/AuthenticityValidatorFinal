@@ -1,84 +1,65 @@
-import re
-from math import sqrt
-from collections import Counter
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
-def preprocess_text(text):
+def calculate_tfidf_similarity(text1, text2):
     """
-    Clean text before similarity calculation.
-    """
+    Calculate TF-IDF cosine similarity between two documents.
 
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-
-    return text.strip()
-
-
-def calculate_cosine_similarity(text1, text2):
-    """
-    Calculate cosine similarity between two texts.
-
-    Returns a value between 0 and 1:
-    0 = completely different
-    1 = identical
+    Returns a value between 0 and 1.
     """
 
-    text1 = preprocess_text(text1)
-    text2 = preprocess_text(text2)
-
-    if not text1 or not text2:
+    if not text1.strip() or not text2.strip():
         return 0.0
 
-    words1 = text1.split()
-    words2 = text2.split()
+    documents = [text1, text2]
 
-    vocabulary = set(words1 + words2)
-
-    vector1 = Counter(words1)
-    vector2 = Counter(words2)
-
-    dot_product = sum(
-        vector1[word] * vector2[word]
-        for word in vocabulary
+    vectorizer = TfidfVectorizer(
+        lowercase=True,
+        stop_words="english",
+        ngram_range=(1, 2)
     )
 
-    magnitude1 = sqrt(
-        sum(vector1[word] ** 2 for word in vocabulary)
-    )
+    tfidf_matrix = vectorizer.fit_transform(documents)
 
-    magnitude2 = sqrt(
-        sum(vector2[word] ** 2 for word in vocabulary)
-    )
+    similarity_matrix = cosine_similarity(tfidf_matrix)
 
-    if magnitude1 == 0 or magnitude2 == 0:
-        return 0.0
+    similarity_score = similarity_matrix[0][1]
 
-    similarity = dot_product / (magnitude1 * magnitude2)
+    return round(float(similarity_score), 3)
 
-    return round(similarity, 3)
+
+def classify_similarity(score):
+    """
+    Convert similarity score into a human-readable category.
+    """
+
+    if score >= 0.80:
+        return "Very High Similarity"
+    elif score >= 0.60:
+        return "High Similarity"
+    elif score >= 0.40:
+        return "Moderate Similarity"
+    elif score >= 0.20:
+        return "Low Similarity"
+    else:
+        return "Very Low Similarity"
 
 
 def analyze_similarity(text1, text2):
     """
-    Analyze similarity and classify the result.
+    Perform complete similarity analysis.
     """
 
-    similarity = calculate_cosine_similarity(text1, text2)
+    score = calculate_tfidf_similarity(
+        text1,
+        text2
+    )
 
-    if similarity >= 0.80:
-        classification = "Very High Similarity"
-    elif similarity >= 0.60:
-        classification = "High Similarity"
-    elif similarity >= 0.40:
-        classification = "Moderate Similarity"
-    elif similarity >= 0.20:
-        classification = "Low Similarity"
-    else:
-        classification = "Very Low Similarity"
+    classification = classify_similarity(score)
 
     return {
-        "similarity_score": similarity,
+        "similarity_score": score,
         "classification": classification
     }
 
@@ -88,13 +69,13 @@ if __name__ == "__main__":
     original_text = """
     Artificial intelligence is transforming many industries.
     Organizations are increasingly using machine learning
-    to analyze data and automate business processes.
+    to analyze data and improve decision making.
     """
 
     reference_text = """
     Artificial intelligence is transforming different industries.
     Organizations use machine learning to analyze data
-    and automate various business processes.
+    and improve business decision making.
     """
 
     result = analyze_similarity(
@@ -102,7 +83,11 @@ if __name__ == "__main__":
         reference_text
     )
 
-    print("Similarity Analysis")
-    print("-------------------")
-    print("Similarity Score:", result["similarity_score"])
-    print("Classification:", result["classification"])
+    print("TF-IDF Similarity Analysis")
+    print("=" * 30)
+
+    print("Similarity Score:",
+          result["similarity_score"])
+
+    print("Classification:",
+          result["classification"])
