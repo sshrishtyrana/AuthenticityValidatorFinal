@@ -1,0 +1,14 @@
+.venv/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Python cache
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
