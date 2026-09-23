@@ -6,10 +6,10 @@ def clean_text(text):
     Clean extracted academic text while preserving meaningful content.
 
     Steps:
-    1. Normalize whitespace
-    2. Remove unnecessary line breaks
-    3. Normalize repeated punctuation
-    4. Remove non-printable characters
+    1. Remove non-printable characters
+    2. Normalize whitespace
+    3. Remove unnecessary spaces before punctuation
+    4. Normalize repeated punctuation
     """
 
     if not text:
@@ -18,7 +18,7 @@ def clean_text(text):
     # Remove non-printable characters
     text = "".join(char for char in text if char.isprintable())
 
-    # Replace multiple spaces/tabs with a single space
+    # Replace multiple spaces, tabs, and line breaks with one space
     text = re.sub(r"\s+", " ", text)
 
     # Remove spaces before punctuation
@@ -28,6 +28,20 @@ def clean_text(text):
     text = re.sub(r"([.!?]){2,}", r"\1", text)
 
     return text.strip()
+
+
+def preprocess_text(text):
+    """
+    Preprocess a single text document.
+
+    Args:
+        text (str): Raw text extracted from a document.
+
+    Returns:
+        str: Cleaned text.
+    """
+
+    return clean_text(text)
 
 
 def preprocess_pages(pages):
@@ -44,6 +58,7 @@ def preprocess_pages(pages):
     processed_pages = []
 
     for page in pages:
+
         cleaned = clean_text(page["text"])
 
         if cleaned:
@@ -56,13 +71,16 @@ def preprocess_pages(pages):
 
 
 if __name__ == "__main__":
+
     from pdf_extractor import extract_text_from_pdf
 
     pdf_path = "../../data/raw/sample.pdf"
 
     pages = extract_text_from_pdf(pdf_path)
+
     processed_pages = preprocess_pages(pages)
 
     for page in processed_pages:
+
         print(f"\n--- Cleaned Page {page['page_number']} ---")
         print(page["text"][:500])

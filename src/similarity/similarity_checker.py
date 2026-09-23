@@ -1,93 +1,104 @@
+from pathlib import Path
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
-def calculate_tfidf_similarity(text1, text2):
-    """
-    Calculate TF-IDF cosine similarity between two documents.
-
-    Returns a value between 0 and 1.
-    """
-
-    if not text1.strip() or not text2.strip():
-        return 0.0
-
-    documents = [text1, text2]
-
-    vectorizer = TfidfVectorizer(
-        lowercase=True,
-        stop_words="english",
-        ngram_range=(1, 2)
-    )
-
-    tfidf_matrix = vectorizer.fit_transform(documents)
-
-    similarity_matrix = cosine_similarity(tfidf_matrix)
-
-    similarity_score = similarity_matrix[0][1]
-
-    return round(float(similarity_score), 3)
+from src.ocr.ocr_pipeline import OCRPipeline
 
 
-def classify_similarity(score):
-    """
-    Convert similarity score into a human-readable category.
-    """
+class SimilarityChecker:
 
-    if score >= 0.80:
-        return "Very High Similarity"
-    elif score >= 0.60:
-        return "High Similarity"
-    elif score >= 0.40:
-        return "Moderate Similarity"
-    elif score >= 0.20:
-        return "Low Similarity"
-    else:
-        return "Very Low Similarity"
+    def __init__(self):
+        self.vectorizer = TfidfVectorizer(
+            lowercase=True,
+            stop_words="english"
+        )
 
+        # Load OCR pipeline only once.
+        self.ocr_pipeline = OCRPipeline()
 
-def analyze_similarity(text1, text2):
-    """
-    Perform complete similarity analysis.
-    """
+    def calculate_similarity(
+        self,
+        input_text: str,
+        reference_text: str
+    ) -> float:
 
-    score = calculate_tfidf_similarity(
-        text1,
-        text2
-    )
+        if not input_text.strip() or not reference_text.strip():
+            return 0.0
 
-    classification = classify_similarity(score)
+        documents = [
+            input_text,
+            reference_text
+        ]
 
-    return {
-        "similarity_score": score,
-        "classification": classification
-    }
+        vectors = self.vectorizer.fit_transform(
+            documents
+        )
 
+        score = cosine_similarity(
+            vectors[0:1],
+            vectors[1:2]
+        )[0][0]
 
-if __name__ == "__main__":
+        return round(float(score), 4)
 
-    original_text = """
-    Artificial intelligence is transforming many industries.
-    Organizations are increasingly using machine learning
-    to analyze data and improve decision making.
-    """
+    def compare_with_references(
+        self,
+        input_text: str,
+        reference_directory: str
+    ) -> list:
 
-    reference_text = """
-    Artificial intelligence is transforming different industries.
-    Organizations use machine learning to analyze data
-    and improve business decision making.
-    """
+        reference_path = Path(reference_directory)
 
-    result = analyze_similarity(
-        original_text,
-        reference_text
-    )
+        if not reference_path.exists():
+            raise FileNotFoundError(
+                f"Reference directory not found: "
+                f"{reference_directory}"
+            )
 
-    print("TF-IDF Similarity Analysis")
-    print("=" * 30)
+        reference_files = sorted(
+            path
+            for path in reference_path.iterdir()
+            if path.is_file()
+            and path.suffix.lower() == ".pdf"
+        )
 
-    print("Similarity Score:",
-          result["similarity_score"])
+        results = []
 
-    print("Classification:",
-          result["classification"])
+        for reference_file in reference_files:
+
+            reference_text = self._extract_text(
+                reference_file
+            )
+
+            score = self.calculate_similarity(
+                input_text,
+                reference_text
+            )
+
+            results.append({
+                "reference_file": reference_file.name,
+                "similarity_score": score,
+                "similarity_percentage": round(
+                    score * 100,
+                    2
+                )
+            })
+
+        results.sort(
+            key=lambda item: item["similarity_score"],
+            reverse=True
+        )
+
+        return results
+
+    def _extract_text(
+        self,
+        file_path: Path
+    ) -> str:
+
+        result = self.ocr_pipeline.extract(
+            str(file_path)
+        )
+
+        return result.get("text", "")

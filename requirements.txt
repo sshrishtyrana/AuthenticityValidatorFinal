@@ -1,0 +1,17 @@
+paddleocr
+paddlepaddle
+paddlex
+transformers
+torch
+torchvision
+sentence-transformers
+opencv-python
+Pillow
+numpy
+pandas
+scikit-learn
+pypdf
+pdf2image
+python-multipart
+python-dotenv
+streamlit
