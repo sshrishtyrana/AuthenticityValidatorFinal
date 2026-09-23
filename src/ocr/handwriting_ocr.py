@@ -1,82 +1,52 @@
-import torch
-from PIL import Image
+import os
 
-from transformers import (
-    RobertaTokenizer,
-    ViTImageProcessor,
-    VisionEncoderDecoderModel
-)
+os.environ["FLAGS_use_mkldnn"] = "0"
+
+from paddleocr import PaddleOCR
 
 
 class HandwritingOCR:
 
-    def __init__(
-        self,
-        model_name="microsoft/trocr-base-handwritten"
-    ):
+    def __init__(self):
 
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "cpu"
+        self.ocr = PaddleOCR(
+            text_detection_model_name="PP-OCRv5_server_det",
+            text_recognition_model_name="PP-OCRv5_server_rec",
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=True,
+            enable_mkldnn=False
         )
-
-        self.image_processor = (
-            ViTImageProcessor.from_pretrained(
-                model_name
-            )
-        )
-
-        self.tokenizer = RobertaTokenizer.from_pretrained(
-            model_name
-        )
-
-        self.model = (
-            VisionEncoderDecoderModel.from_pretrained(
-                model_name
-            )
-        )
-
-        self.model.config.decoder_start_token_id = (
-            self.tokenizer.cls_token_id
-        )
-
-        self.model.config.pad_token_id = (
-            self.tokenizer.pad_token_id
-        )
-
-        self.model.config.eos_token_id = (
-            self.tokenizer.sep_token_id
-        )
-
-        self.model.to(self.device)
-
-        self.model.eval()
 
     def recognize(self, image_path: str) -> str:
 
-        image = Image.open(
-            image_path
-        ).convert("RGB")
+        results = self.ocr.predict(image_path)
 
-        pixel_values = self.image_processor(
-            images=image,
-            return_tensors="pt"
-        ).pixel_values
+        texts = []
 
-        pixel_values = pixel_values.to(
-            self.device
-        )
+        for result in results:
 
-        with torch.no_grad():
+            data = result.json
 
-            generated_ids = self.model.generate(
-                pixel_values
+            if callable(data):
+                data = data()
+
+            if not isinstance(data, dict):
+                continue
+
+            if "res" in data:
+                data = data["res"]
+
+            rec_texts = data.get(
+                "rec_texts",
+                []
             )
 
-        text = self.tokenizer.batch_decode(
-            generated_ids,
-            skip_special_tokens=True
-        )[0]
+            for text in rec_texts:
 
-        return text.strip()
+                text = str(text).strip()
+
+                if text:
+                    texts.append(text)
+
+        return "\n".join(texts)
