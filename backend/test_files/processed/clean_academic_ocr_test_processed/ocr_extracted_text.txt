@@ -1,0 +1,31 @@
+----- Page 1 -----
+AUTHENTICITY VALIDATION IN ACADEMIC DOCUMEN
+Sample OCR Evaluation Page
+
+Academic document verification helps institutions assess whether
+submitted documents are genuine, complete, and academically reliable.
+
+This sample page is designed to test optical character recognition.
+
+1. Introduction
+
+The verification process may include text extraction, metadata analysis,
+document structure checks, similarity detection, and authenticity scoring.
+
+OCR is required when a document contains scanned or image-based pages.
+
+2. Evaluation Results
+
+Metric Value Status
+Pages 1 Passed
+OCR Language English Passed
+Text Quality High Passed
+Document Type Scanned PDF Detected
+
+3. Conclusion
+
+A clean scanned page should produce accurate OCR text with
+
+a high confidence score. This page is used only for system testing.
+
+Prepared for Authenticity Validator for Academia - OCR Test

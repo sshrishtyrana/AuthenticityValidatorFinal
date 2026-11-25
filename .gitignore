@@ -1,14 +1,22 @@
-.venv/
-.idea/
-__pycache__/
-*.pyc
-.DS_Store
 
-# Python cache
-.pytest_cache/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# IDE settings
+.idea/
+
+# Database files
+*.db
+*.sqlite3
+
+# Temporary files
+*.log

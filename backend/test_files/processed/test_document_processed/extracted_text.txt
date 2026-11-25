@@ -1,0 +1,37 @@
+AI-Assisted Academic Document Verification
+Sample Research Paper for Preprocessing Tests
+Abstract
+Academic document verification involves examining digital documents for textual consistency, structural
+information, and signs of possible manipulation. Automated preprocessing prepares documents for later
+OCR, information extraction, similarity analysis, and authenticity verification.
+1. Introduction
+Educational institutions increasingly use digital documents such as research papers, academic reports,
+certificates, and marksheets. A reliable verification system should accept different file formats and prepare
+their content for subsequent processing stages.
+2. Methodology
+The proposed pipeline first identifies the uploaded file type. Text-based documents can be processed directly,
+while scanned pages can be converted into images and prepared for OCR. Image preprocessing may include
+resizing, grayscale conversion, noise reduction, contrast enhancement, and deskewing.
+3. Sample Processing Metrics
+Document Type
+Pages
+Text Available
+OCR Required
+PDF
+3
+Yes
+No
+Scanned PDF
+2
+No
+Yes
+DOCX
+4
+Yes
+No
+4. Conclusion
+A universal preprocessing layer provides a consistent foundation for OCR and authenticity verification while
+preserving important visual details such as signatures, stamps, seals, tables, and faint text.
+References
+[1] Sample Reference: Digital Document Processing and OCR Techniques.
+[2] Sample Reference: Automated Academic Document Verification.
